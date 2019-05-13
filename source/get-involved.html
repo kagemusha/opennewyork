@@ -18,18 +18,54 @@
 		</script>
 
 		<style>
-			.address {
-				max-width: 400px;
-				margin: 20px 0;
+			.social-media-links {
+				list-style-type: none;
 			}
-			.findOfficials {
-				margin-bottom: 20px;
+			.social-media-links li {
+				display: inline;
+			}
+
+			.activities {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(280px, 1fr));
+				/* grid-template-rows: 400px; */
+				grid-auto-rows: 350px;
+				grid-column-gap: 30px;
+				grid-row-gap: 30px;
+				font-size: 12px;
+			}
+
+			@media (max-width: 600px) {
+				.activities {
+					grid-template-columns: repeat(1, minmax(280px, 1fr));
+				}
+			}
+			.activity {
+				background: lightblue;
+				padding: 18px;
+				position: relative;				
+			}
+
+			.activity h3 {
+				text-align: center;
+			}
+
+			.activity a.cta {
+				color: blue;
+				text-align: center;
+				display: block;
+				font-size: 20px;
+				font-weight: bold;	
+				position: absolute;
+				bottom: 10px;	
+				left: 0;
+				right: 0;
+				margin: auto
 			}
 
 		</style>
 	</head>
 	<body class="subpage">
-
 		<!-- Header -->
 		<div class="nav"></div>
 		
@@ -37,28 +73,23 @@
 			<div id="main">
 
 				<!-- Section -->
-					<section class="wrapper">
-						<div class="inner">
-							<div class="2u image right round">
-								<img src="images/big_logo.png" alt="" />
-							</div>
-							<h1>Get Involved!</h1>
-							<hr class="major" />
+				<section class="wrapper style1">
+					<div class="inner">
 
-							
-							<h3>Contact your elected officials and tell them you're pro-housing</h3>
-							<div>
-								<input type="text" name="address" class="address" placeholder="Street Address, City, State Zip">
-								<button class="findOfficials">Find my elected officials</button>
-							</div>
-							<div class="officials">
-								<table class="officials-tbl">
-								</table>	
-							</div>
-							<div class="error">
-								Unable to find that address
-							</div>
-					</section>
+						<div class="2u image right round">
+							<img src="images/big_logo.png" alt="" />
+						</div>
+
+						<h1>Get Involved!</h1>
+						<hr class="major" />
+						<h3>Ways you can help us fight for more housing</h3>
+
+						<div class="activities">
+						</div>
+
+					</div>
+					<div class="testM"></div>
+				</section>
 
 	<!-- Footer -->
 			<footer id="footer">
@@ -72,196 +103,53 @@
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
 			<script src="assets/js/components.js"></script>
-			<script src="assets/js/ny-council-districts.js"></script>
-
+			<script src="assets/js/activity.js"></script>
+			<script src="assets/js/bookClubContent.js"></script>
+			<script src="assets/js/recruitContent.js"></script>
+			<script src="assets/js/attendMeetingsContent.js"></script>
+			<script src="assets/js/contactLegislatorsContent.js"></script>
+			<script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.0.0/webcomponents-bundle.js"></script>
+			<!-- <script src="assets/js/activity.js"></script> -->
 			<script>
-				addComponents()
-				$(".officials").hide()
-				$(".error").hide()
-
-				const order = [
-					'NY State Assembly District',
-					'NY State Senate',	
-					'Governor',
-					'Mayor',		
-					'Borough President',		
-					'Comptroller',
-					'Public Advocate',
-					'Lieutenant Governor',					
-					'United States House of Representatives',
-					'United States Senate',
-					'District Attorney',
-					'Attorney General',
-					'State Comptroller',
+				const activities = [
+					{	title: '1. Attend Meetings', 
+						content: attendMeetingsContent,
+						url: 'calendar',
+						cta: 'View the Calendar'
+					},
+					{	title: '2. Contact Legislators', 
+						content: contactLegislatorsContent,
+						url: 'legislators',
+						cta: 'Find your Legislators'
+					},
+					{
+						title: '3. Join the Book Club', 
+						content: bookClubContent,
+						url: 'book-club',
+						cta: 'View Bookclub Info'
+					},
+					{
+						title: '4. Help Recruit', 
+						content: recruitContent,
+						url: 'recruit',
+						cta: 'See our Recruiting Efforts'
+					},
 				]
 
-				$( ".address" ).keypress(function(evt) {
-					if (evt.charCode == 13) {
-						getOfficials()
-					}
-				});
-
-				$(".findOfficials").click(()=>{
-					getOfficials()
-				});
 				
-				function getOfficials() {
-					$(".officials-tbl").empty()
-					$(".officials-tbl").prepend(`
-									<tr>
-										<th>Office</th>
-										<th>Name</th>
-										<th>Contact</th>
-									</tr>
-									<tr class='city-council-row'></tr>
-							`
-					)
-
-					const address = $('.address').val()
-
-					getCityCouncilDistrict(address)
-
-					const civicInfoUrl="https://www.googleapis.com/civicinfo/v2/representatives"
-					const params = {
-						key: 'AIzaSyAMMiARRv8KY-tRvVo6gNNVeqcIG_FN5YY',
-						address,
-						//levels and roles should filter but don't seem to be working
-						levels: [
-							"locality",
-							"subLocality1",
-							"subLocality2"
-						],
-						roles: [
-							"legislatorLowerBody",
-							"legislatorUpperBody",
-							"executiveCouncil",
-						]
-					}
-
-					$.get(civicInfoUrl, params)
-						.fail(function(err) {
-									$(".officials").hide()
-									$(".error").show()
-  					})
-						.done((data, status)=>{
-							$(".officials").show()
-							$(".error").hide()
-							const officials = {} 
-							const offices = data.offices
-							for (office of offices) {
-								officials[office.name] = []
-								for (j of office.officialIndices) {
-									officials[office.name].push(data.officials[j])
-								}	
-							}
-
-							// since returned results aren't getting filtered
-							const removals = ['President of the United States','Vice-President of the United States']
-							for (rv of removals) {
-								delete officials[rv]
-							}
-
-							// normalize keys -- if we go multi-state will have to update
-							// these offices come back with specifics e.g. NY State Senate District 27
-							// this makes the office generic (e.g. leaves off the District) so that if we want
-							// to suggest contact your state senator can select easily from the officals hash.
-							// also allows to order
-							const fullOffices = {}
-							const normalizations = ['United States House of Representatives', 'NY State Senate',
-								'NY State Assembly District', 'Borough President', 'District Attorney' ]
-								
-							for (raw of Object.keys(officials)) {
-								for (norm of normalizations) {
-									if (raw.startsWith(norm) || raw.endsWith(norm)) {
-										officials[norm] = officials[raw]
-										delete officials[raw]
-										fullOffices[norm] = raw
-									}
-								}
-							}
-						
-							for (office of order) {
-								for (const official of officials[office]) {
-									let emails = ''
-									if (official.emails && official.emails[0]) {
-										eAddr = official.emails[0]
-										email= `<a href="mailto:${eAddr}">${eAddr}</a><br/>`
-									}
-									const channels = {}
-									let twitter = ''
-									if (official.channels) {
-										for (ch of official.channels) {
-											channels[ch.type] = ch.id
-										}	
-										const tHandle = channels['Twitter']
-										if (tHandle) {
-											twitter = `<a href="https://twitter.com/intent/tweet?screen_name=${tHandle}`+
-												`&ref_src=twsrc%5Etfw" class="twitter-mention-button" data-show-count="false">Tweet to @${tHandle}</a>`
-										}
-										// add more later if needed
-									}
-									let name = official.name
-									if (official.urls) {
-										const url = official.urls[0]
-										name = `<a target="_blank" href='${url}'>${name}</a>`
-									} 
-									name += "<br/>"
-
-									const row = `
-										<tr>
-											<td>${office}</td>
-											<td>${name}</td>
-											<td>
-												${email}
-												${official.phones[0]}<br/>
-												${twitter}
-											</td>
-									`
-									$('.officials-tbl').append(row)
-								}
-							}	
-						})
+				const activitiesContainer = $(".activities")
+				for (let activity of activities) {
+					activitiesContainer.append(activityTemplate(activity))
 				}
+			</script>
+			<script>
+				addComponents()
 
-				function getCityCouncilDistrict(addr) {
-					$.ajax({
-						url: 'https://api.cityofnewyork.us/geoclient/v1/search.json', 
-						jsonp: "callback",
-						dataType: "jsonp", 
-						data: {
-							input: addr,
-							app_id: 'f208e50a',
-							app_key: 'db87f7a57ab963b71d36c179ce32157c'
-						}
-					}).done((response)=> {
-					const ccElem = $(".city-council-row")
-					if (response.status == "OK") {
-							const districtNum = +response.results[0].response.cityCouncilDistrict
-							const district = nyCouncilDistricts[districtNum-1]
-							const {name, email, phone} = district
-							ccElem.append(`<td>NYC Council District ${districtNum}</td>`)
-							ccElem.append(`<td><a href='https://council.nyc.gov/district-${districtNum}' target='_blank'>${name}</a></td>`)
-							ccElem.append(`<td>
-															<a href="mailto:${email}">${email}</a><br/>
-															${phone}
-														</td>`)
-						} else {
-							ccElem.append(`
-								<td>
-									Unable to find NY City Council district for that address<br/>
-									<a href='https://council.nyc.gov/districts/' target="_blank">Check the City Council map here</a>
-								</td>
-							`)
-						}
-					}).fail(()=>{
-							ccElem.append(`
-								<td>
-									Unable to find NY City Council district for that address<br/>
-									<a href='https://council.nyc.gov/districts/' target="_blank">Check the City Council map here</a>
-								</td>
-							`)
-					})
-				}
+				// This renders <div>Hello Steve!</div> to the document body
+
+				
+
+
 
 			</script>
 			<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
